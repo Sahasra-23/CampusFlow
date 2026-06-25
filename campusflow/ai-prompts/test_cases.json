@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "input": "Hey guys, remember we have to submit the Computer Networks lab file on Google Classroom by tomorrow at 4:00 PM.",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 2,
+    "input": "URGENT: Software Engineering project report submission deadline is on 30th June at 11:59 PM. Don't miss it!",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 3,
+    "input": "All students must complete the DBMS SQL assignment and submit it via the portal by Monday 5 PM.",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 4,
+    "input": "Sharma sir said CN quiz on Monday, better prepare or we are cooked",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 5,
+    "input": "Guys did anyone hear about the OS assignment? I think someone said it's due this Friday by midnight, can anyone confirm?",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 6,
+    "input": "Compiler Design lab internal is scheduled for 1st July 10 AM. Be present in lab 3.",
+    "expected_isDeadline": true
+  },
+  {
+    "id": 7,
+    "input": "gm gm guys! Did anyone note down today's attendance code for the lecture?",
+    "expected_isDeadline": false
+  },
+  {
+    "id": 8,
+    "input": "💀💀💀 bhai canteen ka samosa aaj bhi stone cold tha 💀💀💀",
+    "expected_isDeadline": false
+  },
+  {
+    "id": 9,
+    "input": "Bro, is the library open today after 6 PM? Need to return some books.",
+    "expected_isDeadline": false
+  },
+  {
+    "id": 10,
+    "input": "Whoever took my black water bottle from the physics lab, please return it. It's brand new.",
+    "expected_isDeadline": false
+  }
+]
