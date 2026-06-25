@@ -3,6 +3,7 @@ import json
 import sys
 import re
 import requests
+import time
 
 # Reconfigure stdout/stderr to UTF-8 to handle emojis in Windows console
 if sys.stdout.encoding != 'utf-8':
@@ -81,18 +82,31 @@ def call_llm(message, idx):
                 "responseMimeType": "application/json"
             }
         }
-        try:
-            response = requests.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            res_json = response.json()
-            # Extract content text
-            text = res_json['candidates'][0]['content']['parts'][0]['text']
-            return text.strip()
-        except Exception as e:
-            print(f"Gemini API Error: {e}")
-            if 'response' in locals() and response.text:
-                print(f"Response Details: {response.text}")
-            return None
+        
+        # Free tier rate limit handling (5 RPM limit retry loop)
+        for attempt in range(4):
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                if response.status_code == 429:
+                    wait_time = 12.0  # sleep 12s on Gemini 429 to clear the rate window
+                    print(f"  [Rate limit 429 encountered. Sleeping {wait_time}s and retrying (attempt {attempt+1}/4)...]")
+                    time.sleep(wait_time)
+                    continue
+                response.raise_for_status()
+                res_json = response.json()
+                text = res_json['candidates'][0]['content']['parts'][0]['text']
+                
+                # Introduce a small baseline delay between successful requests to prevent rate limit spikes
+                time.sleep(1.0)
+                return text.strip()
+            except Exception as e:
+                if attempt == 3:  # last attempt failed
+                    print(f"Gemini API Error: {e}")
+                    if 'response' in locals() and response.text:
+                        print(f"Response Details: {response.text}")
+                    return None
+                time.sleep(2.0)
+                
     elif GROQ_API_KEY:
         # Call Groq Llama 3.3 70B
         url = "https://api.groq.com/openai/v1/chat/completions"
@@ -108,17 +122,27 @@ def call_llm(message, idx):
             ],
             "response_format": {"type": "json_object"}
         }
-        try:
-            response = requests.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            res_json = response.json()
-            text = res_json['choices'][0]['message']['content']
-            return text.strip()
-        except Exception as e:
-            print(f"Groq API Error: {e}")
-            if 'response' in locals() and response.text:
-                print(f"Response Details: {response.text}")
-            return None
+        
+        for attempt in range(4):
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                if response.status_code == 429:
+                    wait_time = 5.0
+                    print(f"  [Rate limit 429 encountered. Sleeping {wait_time}s and retrying (attempt {attempt+1}/4)...]")
+                    time.sleep(wait_time)
+                    continue
+                response.raise_for_status()
+                res_json = response.json()
+                text = res_json['choices'][0]['message']['content']
+                time.sleep(1.0)
+                return text.strip()
+            except Exception as e:
+                if attempt == 3:
+                    print(f"Groq API Error: {e}")
+                    if 'response' in locals() and response.text:
+                        print(f"Response Details: {response.text}")
+                    return None
+                time.sleep(2.0)
     else:
         # Mock answers for Dry Run based on current date context (Thursday, June 25, 2026)
         mocks = {
